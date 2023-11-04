@@ -1,7 +1,9 @@
 package mate.academy.repository.impl;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import mate.academy.exception.EntityNotFoundException;
 import mate.academy.model.Book;
 import mate.academy.repository.BookRepository;
 import org.hibernate.Session;
@@ -44,7 +46,15 @@ public class BookRepositoryImpl implements BookRepository {
                     = session.createQuery("FROM Book", Book.class);
             return getAllBooks.getResultList();
         } catch (Exception e) {
-            throw new RuntimeException("Can't get list of all books", e);
+            throw new EntityNotFoundException("Can't get list of all books");
+        }
+    }
+
+    @Override
+    public Optional<Book> findById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Book book = session.get(Book.class, id);
+            return Optional.ofNullable(book);
         }
     }
 }
