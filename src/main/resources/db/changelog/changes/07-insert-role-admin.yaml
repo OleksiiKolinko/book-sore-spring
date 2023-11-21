@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-users_roles-table
+      author: alex
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column: { name: email, value: "admin@example.com" }
+              - column: { name: password, value: "$2a$10$l/kQdlIt5iQb5y6jeqMECOx/qM8iqvFrpbLRxbXUJ3WbcjQ6xpxyC" }
+              - column: { name: first_name, value: "admin1" }
+              - column: { name: last_name, value: "admin2" }
+        - insert:
+            tableName: users_roles
+            columns:
+              - column: { name: user_id, valueNumeric: 1 }
+              - column: { name: role_id, valueNumeric: 1 }
