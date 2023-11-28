@@ -3,10 +3,9 @@ package mate.academy.dto.book;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.Data;
-import mate.academy.model.Category;
+import mate.academy.dto.category.CategoryDto;
 
 @Data
 public class CreateBookRequestDto {
@@ -21,5 +20,5 @@ public class CreateBookRequestDto {
     private BigDecimal price;
     private String description;
     private String coverImage;
-    private Set<Category> categories = new HashSet<>();
+    private Set<CategoryDto> categories;
 }
