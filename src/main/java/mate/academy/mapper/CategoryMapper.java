@@ -13,4 +13,7 @@ public interface CategoryMapper {
     Category toEntity(CreateCategoryDto categoryDto);
 
     CreateCategoryDto toViewModel(Category category);
+
+    Category toEntityUpdate(CategoryDto category);
+
 }
