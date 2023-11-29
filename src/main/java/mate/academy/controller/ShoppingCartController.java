@@ -33,7 +33,7 @@ public class ShoppingCartController {
     @Operation(summary = "Get shopping cart",
             description = "Get all information of  user shopping cart")
     public ShoppingCartDto getShoppingCart(Authentication authentication, Pageable pageable) {
-        return shoppingCartService.getShoppingCart(authentication, pageable);
+        return shoppingCartService.getShoppingCart(authentication.getName(), pageable);
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -42,8 +42,7 @@ public class ShoppingCartController {
             description = "Add book to the shopping cart")
     public CartItemDto addCartItem(@RequestBody @Valid CreateCartItemDto cartItemDto,
                                    Authentication authentication) {
-
-        return shoppingCartService.addCartItem(cartItemDto, authentication);
+        return shoppingCartService.addCartItem(cartItemDto, authentication.getName());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -53,7 +52,8 @@ public class ShoppingCartController {
     public CartItemDto updateQuantity(@PathVariable Long cartItemId,
                                @RequestBody @Valid QuantityCartItemDto cartItemDto,
                                       Authentication authentication) {
-        return shoppingCartService.updateQuantity(cartItemId, cartItemDto, authentication);
+        return shoppingCartService
+                .updateQuantity(cartItemId, cartItemDto, authentication.getName());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -62,6 +62,6 @@ public class ShoppingCartController {
             description = "Remove a book from the shopping cart by id")
     public void deleteCartItemId(@PathVariable Long cartItemId, Authentication authentication) {
 
-        shoppingCartService.deleteCartItemId(cartItemId, authentication);
+        shoppingCartService.deleteCartItemId(cartItemId, authentication.getName());
     }
 }

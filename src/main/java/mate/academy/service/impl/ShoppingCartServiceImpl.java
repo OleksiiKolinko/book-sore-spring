@@ -1,6 +1,6 @@
 package mate.academy.service.impl;
 
-import java.util.HashSet;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,6 @@ import mate.academy.repository.shoppingcart.ShoppingCartRepository;
 import mate.academy.repository.user.UserRepository;
 import mate.academy.service.ShoppingCartService;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,27 +34,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final BookRepository bookRepository;
 
     @Override
-    public ShoppingCartDto getShoppingCart(Authentication authentication, Pageable pageable) {
+    public ShoppingCartDto getShoppingCart(String userEmail, Pageable pageable) {
         return shoppingCartMapper.toDto(shoppingCartRepository
-                .findUserById(getUserId(authentication)));
+                .findShoppingCartById(getUserId(userEmail)));
     }
 
     @Override
-    public CartItemDto addCartItem(CreateCartItemDto cartItemDto, Authentication authentication) {
-        Long userId = getUserId(authentication);
-        ShoppingCart shoppingCart = shoppingCartRepository.findUserById(userId);
+    @Transactional
+    public CartItemDto addCartItem(CreateCartItemDto cartItemDto, String userEmail) {
+        Long userId = getUserId(userEmail);
+        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
         CartItem cartItem = cartItemMapper.toModel(cartItemDto);
-        if (shoppingCart == null) {
-            Set<CartItem> cartItemSet = new HashSet<>();
-            cartItemSet.add(cartItem);
-            shoppingCart = new ShoppingCart();
-            shoppingCart.setUser(userRepository.findById(userId).orElseThrow(
-                    () -> new RegistrationException("User  with this id: "
-                            + userId + "is not exist")));
-            shoppingCart.setCartItems(cartItemSet);
-        } else {
-            shoppingCart.getCartItems().add(cartItem);
-        }
         Long bookId = cartItemDto.bookId();
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book with id: " + bookId)
@@ -68,26 +57,21 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     public CartItemDto updateQuantity(Long cartItemId, QuantityCartItemDto cartItemDto,
-                                      Authentication authentication) {
-        if (getMatch(cartItemId, authentication)) {
-            CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(
-                    () -> new EntityNotFoundException("Can't find cart item with id: "
-                            + cartItemId));
-            ShoppingCart shoppingCart = shoppingCartRepository
-                    .findUserById(getUserId(authentication));
-            Set<CartItem> cartItems = shoppingCart.getCartItems();
-            cartItem.setQuantity(cartItemDto.quantity());
-            cartItems.add(cartItem);
-            shoppingCart.setCartItems(cartItems);
-            shoppingCartRepository.save(shoppingCart);
-            return cartItemMapper.toDto(cartItemRepository.save(cartItem));
-        }
-        return null;
+                                      String userEmail) {
+        Long userId = getUserId(userEmail);
+        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
+        CartItem cartItem = cartItemRepository
+                .findByIdAndShoppingCartId(cartItemId, shoppingCart.getId())
+                        .orElseThrow(() -> new EntityNotFoundException("Can't find item by id "
+                                + cartItemId + " for user with id " + userId));
+        cartItem.setQuantity(cartItemDto.quantity());
+        shoppingCartRepository.save(shoppingCart);
+        return cartItemMapper.toDto(cartItemRepository.save(cartItem));
     }
 
     @Override
-    public void deleteCartItemId(Long cartItemId, Authentication authentication) {
-        if (getMatch(cartItemId, authentication)) {
+    public void deleteCartItemId(Long cartItemId, String userEmail) {
+        if (getMatch(cartItemId, userEmail)) {
             CartItem cartItem = Optional.of(cartItemRepository.findById(cartItemId))
                     .get().orElseThrow(
                             () -> new EntityNotFoundException(
@@ -97,14 +81,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
     }
 
-    private Long getUserId(Authentication authentication) {
-        String userEmail = authentication.getName();
+    private Long getUserId(String userEmail) {
         return userRepository.findByEmail(userEmail).orElseThrow(() -> new RegistrationException(
                 "Users id with this email: " + userEmail + "is not exist")).getId();
     }
 
-    private boolean getMatch(Long cartItemId, Authentication authentication) {
-        ShoppingCart shoppingCart = shoppingCartRepository.findUserById(getUserId(authentication));
+    private boolean getMatch(Long cartItemId, String userEmail) {
+        ShoppingCart shoppingCart = shoppingCartRepository
+                .findShoppingCartById(getUserId(userEmail));
         Set<CartItem> cartItems = shoppingCart.getCartItems();
         return cartItems.stream().anyMatch(c -> c.getId().equals(cartItemId));
     }
