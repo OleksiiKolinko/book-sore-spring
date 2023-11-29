@@ -34,15 +34,14 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final BookRepository bookRepository;
 
     @Override
-    public ShoppingCartDto getShoppingCart(String userEmail, Pageable pageable) {
+    public ShoppingCartDto getShoppingCart(Long userId, Pageable pageable) {
         return shoppingCartMapper.toDto(shoppingCartRepository
-                .findShoppingCartById(getUserId(userEmail)));
+                .findShoppingCartById(userId));
     }
 
     @Override
     @Transactional
-    public CartItemDto addCartItem(CreateCartItemDto cartItemDto, String userEmail) {
-        Long userId = getUserId(userEmail);
+    public CartItemDto addCartItem(CreateCartItemDto cartItemDto, Long userId) {
         ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
         CartItem cartItem = cartItemMapper.toModel(cartItemDto);
         Long bookId = cartItemDto.bookId();
@@ -57,8 +56,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     public CartItemDto updateQuantity(Long cartItemId, QuantityCartItemDto cartItemDto,
-                                      String userEmail) {
-        Long userId = getUserId(userEmail);
+                                      Long userId) {
         ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
         CartItem cartItem = cartItemRepository
                 .findByIdAndShoppingCartId(cartItemId, shoppingCart.getId())
@@ -70,7 +68,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public void deleteCartItemId(Long cartItemId, String userEmail) {
+    public void deleteCartItemId(Long cartItemId, Long userEmail) {
         if (getMatch(cartItemId, userEmail)) {
             CartItem cartItem = Optional.of(cartItemRepository.findById(cartItemId))
                     .get().orElseThrow(
@@ -86,9 +84,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 "Users id with this email: " + userEmail + "is not exist")).getId();
     }
 
-    private boolean getMatch(Long cartItemId, String userEmail) {
+    private boolean getMatch(Long cartItemId, Long userId) {
         ShoppingCart shoppingCart = shoppingCartRepository
-                .findShoppingCartById(getUserId(userEmail));
+                .findShoppingCartById(userId);
         Set<CartItem> cartItems = shoppingCart.getCartItems();
         return cartItems.stream().anyMatch(c -> c.getId().equals(cartItemId));
     }

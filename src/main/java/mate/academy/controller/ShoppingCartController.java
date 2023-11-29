@@ -8,6 +8,7 @@ import mate.academy.dto.cartitem.CartItemDto;
 import mate.academy.dto.cartitem.CreateCartItemDto;
 import mate.academy.dto.cartitem.QuantityCartItemDto;
 import mate.academy.dto.shoppingcart.ShoppingCartDto;
+import mate.academy.model.User;
 import mate.academy.service.ShoppingCartService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +34,8 @@ public class ShoppingCartController {
     @Operation(summary = "Get shopping cart",
             description = "Get all information of  user shopping cart")
     public ShoppingCartDto getShoppingCart(Authentication authentication, Pageable pageable) {
-        return shoppingCartService.getShoppingCart(authentication.getName(), pageable);
+        User user = (User) authentication.getPrincipal();
+        return shoppingCartService.getShoppingCart(user.getId(), pageable);
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -42,7 +44,8 @@ public class ShoppingCartController {
             description = "Add book to the shopping cart")
     public CartItemDto addCartItem(@RequestBody @Valid CreateCartItemDto cartItemDto,
                                    Authentication authentication) {
-        return shoppingCartService.addCartItem(cartItemDto, authentication.getName());
+        User user = (User) authentication.getPrincipal();
+        return shoppingCartService.addCartItem(cartItemDto, user.getId());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -52,8 +55,9 @@ public class ShoppingCartController {
     public CartItemDto updateQuantity(@PathVariable Long cartItemId,
                                @RequestBody @Valid QuantityCartItemDto cartItemDto,
                                       Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
         return shoppingCartService
-                .updateQuantity(cartItemId, cartItemDto, authentication.getName());
+                .updateQuantity(cartItemId, cartItemDto, user.getId());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -61,7 +65,7 @@ public class ShoppingCartController {
     @Operation(summary = "Remove a book from the shopping cart",
             description = "Remove a book from the shopping cart by id")
     public void deleteCartItemId(@PathVariable Long cartItemId, Authentication authentication) {
-
-        shoppingCartService.deleteCartItemId(cartItemId, authentication.getName());
+        User user = (User) authentication.getPrincipal();
+        shoppingCartService.deleteCartItemId(cartItemId, user.getId());
     }
 }
