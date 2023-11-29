@@ -1,6 +1,7 @@
 package mate.academy.service.impl;
 
 import jakarta.transaction.Transactional;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +49,24 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException("Can't find book with id: " + bookId)
         );
+        if (shoppingCart == null) {
+            shoppingCart = addNewShoppingCart(userId);
+        }
+        shoppingCart.getCartItems().add(cartItem);
         cartItem.setBook(book);
         cartItem.setShoppingCart(shoppingCart);
         shoppingCartRepository.save(shoppingCart);
         return cartItemMapper.toDto(cartItemRepository.save(cartItem));
+    }
+
+    private ShoppingCart addNewShoppingCart(Long userId) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        Set<CartItem> cartItemSet = new HashSet<>();
+        shoppingCart.setUser(userRepository.findById(userId).orElseThrow(
+                    () -> new RegistrationException("User  with this id: "
+                            + userId + "is not exist")));
+        shoppingCart.setCartItems(cartItemSet);
+        return shoppingCart;
     }
 
     @Override
