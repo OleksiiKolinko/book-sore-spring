@@ -1,13 +1,10 @@
 package mate.academy.service.impl;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.book.BookDto;
 import mate.academy.dto.book.BookSearchParameters;
 import mate.academy.dto.book.CreateBookRequestDto;
-import mate.academy.dto.category.CategoryDto;
 import mate.academy.exception.EntityNotFoundException;
 import mate.academy.mapper.BookMapper;
 import mate.academy.model.Book;
