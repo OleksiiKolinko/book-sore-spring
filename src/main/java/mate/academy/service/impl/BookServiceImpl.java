@@ -27,9 +27,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookDto save(CreateBookRequestDto bookDto) {
-        Set<Long> categoryIdCreate = bookDto.getCategories().stream()
-                .map(CategoryDto::id)
-                .collect(Collectors.toSet());
         Book book = bookMapper.toEntity(bookDto);
         return bookMapper.toDto(bookRepository.save(book));
     }
