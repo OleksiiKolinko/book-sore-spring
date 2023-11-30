@@ -1,7 +1,6 @@
 package mate.academy.service.impl;
 
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.book.BookDto;
 import mate.academy.dto.book.BookSearchParameters;
@@ -9,7 +8,6 @@ import mate.academy.dto.book.CreateBookRequestDto;
 import mate.academy.exception.EntityNotFoundException;
 import mate.academy.mapper.BookMapper;
 import mate.academy.model.Book;
-import mate.academy.model.Category;
 import mate.academy.repository.book.BookRepository;
 import mate.academy.repository.book.BookSpecificationBuilder;
 import mate.academy.service.BookService;
@@ -23,7 +21,6 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final BookSpecificationBuilder bookSpecificationBuilder;
-    private final Set<Category> category;
 
     @Override
     public BookDto save(CreateBookRequestDto bookDto) {

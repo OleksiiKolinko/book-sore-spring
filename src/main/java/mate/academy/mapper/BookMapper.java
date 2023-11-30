@@ -15,5 +15,4 @@ public interface BookMapper {
     Book toEntity(CreateBookRequestDto bookDto);
 
     BookDtoWithoutCategoryIds toDtoWithoutCategories(Book book);
-
 }
