@@ -94,11 +94,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
     }
 
-    private Long getUserId(String userEmail) {
-        return userRepository.findByEmail(userEmail).orElseThrow(() -> new RegistrationException(
-                "Users id with this email: " + userEmail + "is not exist")).getId();
-    }
-
     private boolean getMatch(Long cartItemId, Long userId) {
         ShoppingCart shoppingCart = shoppingCartRepository
                 .findShoppingCartById(userId);
