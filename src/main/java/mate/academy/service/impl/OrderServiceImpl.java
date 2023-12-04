@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import mate.academy.dto.order.DoOrderDto;
 import mate.academy.dto.order.OrderDto;
 import mate.academy.dto.order.OrderItemDto;
+import mate.academy.dto.order.OrderRequestDto;
 import mate.academy.dto.order.OrderStatusDto;
 import mate.academy.exception.EntityNotFoundException;
 import mate.academy.exception.RegistrationException;
@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto createOrder(Long userId, DoOrderDto shippingAddress) {
+    public OrderDto createOrder(Long userId, OrderRequestDto shippingAddress) {
         Order newOrder = orderMapper.toModel(shippingAddress);
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new RegistrationException("Can't find user by id: " + userId));
@@ -86,30 +86,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Set<OrderItemDto> getAllOrderItems(Long orderId, Long userId) {
-        if (getMatch(orderId, userId)) {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Can't find order by id: " + orderId));
-            Set<OrderItem> orderItems = order.getOrderItems();
-            return orderItems.stream().map(orderItemMapper::toDto).collect(Collectors.toSet());
-        }
-        return null;
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Can't find order by id: " + orderId));
+        Set<OrderItem> orderItems = order.getOrderItems();
+        return orderItems.stream().map(orderItemMapper::toDto).collect(Collectors.toSet());
     }
 
     @Override
     public OrderItemDto getOrderItem(Long orderId, Long itemId, Long userId) {
-        if (getMatch(orderId, userId)) {
-            OrderItem orderItem = orderItemRepository.findByIdAndOrderId(itemId, orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Can't find order item "
-                            + "by order id: " + orderId + " and item id: " + itemId));
-            return orderItemMapper.toDto(orderItem);
-        }
-        return null;
-    }
-
-    private boolean getMatch(Long orderId, Long userId) {
-        return orderRepository.findAll().stream()
-                .anyMatch(o -> o.getId().equals(orderId) && o.getUser().getId().equals(userId));
+        OrderItem orderItem = orderItemRepository
+                .findByIdAndOrderIdAndUserId(itemId, orderId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Can't find order item "
+                        + "by order id: " + orderId + " and item id: " + itemId
+                        + " and user id: " + userId));
+        return orderItemMapper.toDto(orderItem);
     }
 
     @Override

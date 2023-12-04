@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import mate.academy.dto.order.DoOrderDto;
 import mate.academy.dto.order.OrderDto;
 import mate.academy.dto.order.OrderItemDto;
+import mate.academy.dto.order.OrderRequestDto;
 import mate.academy.dto.order.OrderStatusDto;
 import mate.academy.model.User;
 import mate.academy.service.OrderService;
@@ -34,7 +34,7 @@ public class OrderController {
     @Operation(summary = "Place an order",
             description = "Place an order by shipping address")
     public OrderDto createOrder(Authentication authentication,
-                                @RequestBody @Valid DoOrderDto shippingAddress) {
+                                @RequestBody @Valid OrderRequestDto shippingAddress) {
         User user = (User) authentication.getPrincipal();
         return orderService.createOrder(user.getId(), shippingAddress);
     }
