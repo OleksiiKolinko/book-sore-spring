@@ -38,7 +38,11 @@ import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookControllerTest {
-    protected static MockMvc mockMvc;
+    private static MockMvc mockMvc;
+    private static final CategoryDto CATEGORY_DTO_1 =
+            new CategoryDto(1L,"Fiction1", "Fiction books1");
+    private static final CategoryDto CATEGORY_DTO_2 =
+            new CategoryDto(2L,"Fiction2", "Fiction books2");
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -55,59 +59,6 @@ public class BookControllerTest {
             ScriptUtils.executeSqlScript(connection, new ClassPathResource(
                     "database/books/add-three-books-to-books-table.sql"));
         }
-    }
-
-    @SneakyThrows
-    static void teardown(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(true);
-            ScriptUtils.executeSqlScript(connection,
-                    new ClassPathResource("database/books/remove-book-from-books-table.sql"));
-        }
-    }
-
-    private List<BookDto> getBookDtos() {
-        final CategoryDto categoryDto1 = new CategoryDto(1L,"Fiction1", "Fiction books1");
-        final CategoryDto categoryDto2 = new CategoryDto(2L,"Fiction2", "Fiction books2");
-        BookDto bookDto1 = new BookDto();
-        bookDto1.setId(1L);
-        bookDto1.setTitle("Title1");
-        bookDto1.setAuthor("Author1");
-        bookDto1.setIsbn("Isbn1");
-        bookDto1.setPrice(BigDecimal.valueOf(120));
-        bookDto1.setDescription("Description1");
-        bookDto1.setCoverImage("Cover Image1");
-        Set<CategoryDto> categoryDtos1 = new HashSet<>();
-        categoryDtos1.add(categoryDto1);
-        bookDto1.setCategories(categoryDtos1);
-        BookDto bookDto2 = new BookDto();
-        bookDto2.setId(2L);
-        bookDto2.setTitle("Title2");
-        bookDto2.setAuthor("Author2");
-        bookDto2.setIsbn("Isbn2");
-        bookDto2.setPrice(BigDecimal.valueOf(220));
-        bookDto2.setDescription("Description2");
-        bookDto2.setCoverImage("Cover Image2");
-        Set<CategoryDto> categoryDtos2 = new HashSet<>();
-        categoryDtos2.add(categoryDto1);
-        categoryDtos2.add(categoryDto2);
-        bookDto2.setCategories(categoryDtos2);
-        BookDto bookDto3 = new BookDto();
-        bookDto3.setId(3L);
-        bookDto3.setTitle("Title3");
-        bookDto3.setAuthor("Author3");
-        bookDto3.setIsbn("Isbn3");
-        bookDto3.setPrice(BigDecimal.valueOf(320));
-        bookDto3.setDescription("Description3");
-        bookDto3.setCoverImage("Cover Image3");
-        Set<CategoryDto> categoryDtos3 = new HashSet<>();
-        categoryDtos3.add(categoryDto2);
-        bookDto3.setCategories(categoryDtos3);
-        List<BookDto> expected = new ArrayList<>();
-        expected.add(bookDto1);
-        expected.add(bookDto2);
-        expected.add(bookDto3);
-        return expected;
     }
 
     @WithMockUser(username = "user")
@@ -146,25 +97,15 @@ public class BookControllerTest {
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("Create a new book")
     public void createBook_ValidRequestDto_Success() throws Exception {
-        CreateBookRequestDto bookRequestDto = new CreateBookRequestDto();
-        bookRequestDto.setTitle("Title1");
-        bookRequestDto.setAuthor("Author1");
-        bookRequestDto.setIsbn("Isbn4");
-        bookRequestDto.setPrice(BigDecimal.valueOf(120));
-        bookRequestDto.setDescription("Description1");
-        bookRequestDto.setCoverImage("Cover Image1");
-        Set<CategoryDto> categoryDtos1 = new HashSet<>();
-        CategoryDto categoryDto1 = new CategoryDto(1L,"Fiction1", "Fiction books1");
-        categoryDtos1.add(categoryDto1);
-        bookRequestDto.setCategories(categoryDtos1);
-        BookDto expected = new BookDto();
-        expected.setTitle(bookRequestDto.getTitle());
-        expected.setAuthor(bookRequestDto.getAuthor());
-        expected.setIsbn(bookRequestDto.getIsbn());
-        expected.setPrice(bookRequestDto.getPrice());
-        expected.setDescription(bookRequestDto.getDescription());
-        expected.setCoverImage(bookRequestDto.getCoverImage());
-        expected.setCategories(categoryDtos1);
+        BookDto expected = getFirstBookDto().setIsbn("Isbn4");
+        CreateBookRequestDto bookRequestDto = new CreateBookRequestDto()
+                .setTitle(expected.getTitle())
+                .setAuthor(expected.getAuthor())
+                .setIsbn(expected.getIsbn())
+                .setPrice(expected.getPrice())
+                .setDescription(expected.getDescription())
+                .setCoverImage(expected.getCoverImage())
+                .setCategories(expected.getCategories());
         String jsonRequest = objectMapper.writeValueAsString(bookRequestDto);
         MvcResult result = mockMvc.perform(post("/books")
                         .content(jsonRequest)
@@ -175,5 +116,65 @@ public class BookControllerTest {
                 result.getResponse().getContentAsString(), BookDto.class);
         Assertions.assertNotNull(actual);
         EqualsBuilder.reflectionEquals(expected, actual);
+    }
+
+    @SneakyThrows
+    private static void teardown(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(connection,
+                    new ClassPathResource("database/books/remove-book-from-books-table.sql"));
+        }
+    }
+
+    private BookDto getFirstBookDto() {
+        Set<CategoryDto> categoryDtos1 = new HashSet<>();
+        categoryDtos1.add(CATEGORY_DTO_1);
+        return new BookDto()
+                .setId(1L)
+                .setTitle("Title1")
+                .setAuthor("Author1")
+                .setIsbn("Isbn1")
+                .setPrice(BigDecimal.valueOf(120))
+                .setDescription("Description1")
+                .setCoverImage("Cover Image1")
+                .setCategories(categoryDtos1);
+    }
+
+    private BookDto getSecondBookDto() {
+        Set<CategoryDto> categoryDtos2 = new HashSet<>();
+        categoryDtos2.add(CATEGORY_DTO_1);
+        categoryDtos2.add(CATEGORY_DTO_2);
+        return new BookDto()
+                .setId(2L)
+                .setTitle("Title2")
+                .setAuthor("Author2")
+                .setIsbn("Isbn2")
+                .setPrice(BigDecimal.valueOf(220))
+                .setDescription("Description2")
+                .setCoverImage("Cover Image2")
+                .setCategories(categoryDtos2);
+    }
+
+    private BookDto getThirdBookDto() {
+        Set<CategoryDto> categoryDtos3 = new HashSet<>();
+        categoryDtos3.add(CATEGORY_DTO_2);
+        return new BookDto()
+                .setId(3L)
+                .setTitle("Title3")
+                .setAuthor("Author3")
+                .setIsbn("Isbn3")
+                .setPrice(BigDecimal.valueOf(320))
+                .setDescription("Description3")
+                .setCoverImage("Cover Image3")
+                .setCategories(categoryDtos3);
+    }
+
+    private List<BookDto> getBookDtos() {
+        List<BookDto> expected = new ArrayList<>();
+        expected.add(getFirstBookDto());
+        expected.add(getSecondBookDto());
+        expected.add(getThirdBookDto());
+        return expected;
     }
 }

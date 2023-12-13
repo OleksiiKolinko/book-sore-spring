@@ -34,7 +34,7 @@ import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryControllerTest {
-    protected static MockMvc mockMvc;
+    private static MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -50,16 +50,6 @@ public class CategoryControllerTest {
             connection.setAutoCommit(true);
             ScriptUtils.executeSqlScript(connection,
                     new ClassPathResource("database/categories/add-three-categories.sql"));
-        }
-    }
-
-    @SneakyThrows
-    static void teardown(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setAutoCommit(true);
-            ScriptUtils.executeSqlScript(connection,
-                    new ClassPathResource(
-                            "database/categories/remove-category-from-categories-table.sql"));
         }
     }
 
@@ -118,5 +108,15 @@ public class CategoryControllerTest {
                 .readValue(result.getResponse().getContentAsString(), CategoryDto.class);
         Assertions.assertNotNull(actual);
         EqualsBuilder.reflectionEquals(expected, actual, "id");
+    }
+
+    @SneakyThrows
+    private static void teardown(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(true);
+            ScriptUtils.executeSqlScript(connection,
+                    new ClassPathResource(
+                            "database/categories/remove-category-from-categories-table.sql"));
+        }
     }
 }
