@@ -88,7 +88,6 @@ public class BookServiceTest {
         verifyNoMoreInteractions(bookRepository, bookMapper);
     }
 
-    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @Test
     @DisplayName("Verify the correct book was return when book exists")
     public void findById_WithValidBookId_ShouldReturnValidBook() {
