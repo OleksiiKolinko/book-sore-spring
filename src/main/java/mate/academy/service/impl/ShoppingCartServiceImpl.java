@@ -37,13 +37,13 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public ShoppingCartDto getShoppingCart(Long userId, Pageable pageable) {
         return shoppingCartMapper.toDto(shoppingCartRepository
-                .findShoppingCartById(userId));
+                .findShoppingCartByUserId(userId));
     }
 
     @Override
     @Transactional
     public CartItemDto addCartItem(CreateCartItemDto cartItemDto, Long userId) {
-        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
+        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartByUserId(userId);
         CartItem cartItem = cartItemMapper.toModel(cartItemDto);
         Long bookId = cartItemDto.bookId();
         Book book = bookRepository.findById(bookId).orElseThrow(
@@ -72,7 +72,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public CartItemDto updateQuantity(Long cartItemId, QuantityCartItemDto cartItemDto,
                                       Long userId) {
-        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
+        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartByUserId(userId);
         CartItem cartItem = cartItemRepository
                 .findByIdAndShoppingCartId(cartItemId, shoppingCart.getId())
                         .orElseThrow(() -> new EntityNotFoundException("Can't find item by id "
@@ -96,7 +96,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private boolean getMatch(Long cartItemId, Long userId) {
         ShoppingCart shoppingCart = shoppingCartRepository
-                .findShoppingCartById(userId);
+                .findShoppingCartByUserId(userId);
         Set<CartItem> cartItems = shoppingCart.getCartItems();
         return cartItems.stream().anyMatch(c -> c.getId().equals(cartItemId));
     }

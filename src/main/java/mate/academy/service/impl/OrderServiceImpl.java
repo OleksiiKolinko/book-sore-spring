@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setUser(user);
         newOrder.setOrderDate(LocalDateTime.now());
         newOrder.setStatus(Order.Status.PENDING);
-        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartById(userId);
+        ShoppingCart shoppingCart = shoppingCartRepository.findShoppingCartByUserId(userId);
         Set<CartItem> cartItems = shoppingCart.getCartItems();
         BigDecimal total = cartItems.stream()
                 .map(o -> o.getBook().getPrice().multiply(BigDecimal.valueOf(o.getQuantity())))

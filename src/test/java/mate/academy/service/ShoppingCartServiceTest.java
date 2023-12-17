@@ -46,6 +46,18 @@ public class ShoppingCartServiceTest {
     private static final int QUANTITY = 5;
     private static final String TITLE = "Title1";
     private static final Long ID_TWO = 2L;
+    private static final String USER_EMAIL = "Jon1.doe@example.com";
+    private static final String USER_PASSWORD = "12345678";
+    private static final String FIRST_NAME = "firstName1";
+    private static final String LAST_NAME = "lastName1";
+    private static final String SHIPPING_ADDRESS = "ShippingAddress1";
+    private static final String FICTION = "Fiction";
+    private static final String FICTION_BOOKS = "Fiction books";
+    private static final String AUTHOR = "Author1";
+    private static final String ISBN = "Isbn1";
+    private static final BigDecimal PRICE = BigDecimal.valueOf(20);
+    private static final String DESCRIPTION = "Description1";
+    private static final String COVER_IMAGE = "Cover Image1";
     @Mock
     private ShoppingCartRepository shoppingCartRepository;
     @Mock
@@ -67,11 +79,11 @@ public class ShoppingCartServiceTest {
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto(ID_ONE, ID_TWO, getCartItemDtos());
         ShoppingCart shoppingCart = getShoppingCart();
         Pageable pageable = PageRequest.of(0, 10);
-        when(shoppingCartRepository.findShoppingCartById(anyLong())).thenReturn(shoppingCart);
+        when(shoppingCartRepository.findShoppingCartByUserId(anyLong())).thenReturn(shoppingCart);
         when(shoppingCartMapper.toDto(any(ShoppingCart.class))).thenReturn(shoppingCartDto);
         ShoppingCartDto actual = shoppingCartService.getShoppingCart(ID_TWO, pageable);
         assertEquals(shoppingCartDto, actual);
-        verify(shoppingCartRepository, times(1)).findShoppingCartById(anyLong());
+        verify(shoppingCartRepository, times(1)).findShoppingCartByUserId(anyLong());
         verify(shoppingCartMapper, times(1)).toDto(any(ShoppingCart.class));
         verifyNoMoreInteractions(shoppingCartRepository, shoppingCartMapper);
     }
@@ -107,14 +119,14 @@ public class ShoppingCartServiceTest {
         CartItemDto cartItemDto = new CartItemDto(ID_ONE, ID_ONE, TITLE, QUANTITY);
         CartItem cartItem = getCartItem();
         ShoppingCart shoppingCart = getShoppingCart();
-        when(shoppingCartRepository.findShoppingCartById(anyLong())).thenReturn(shoppingCart);
+        when(shoppingCartRepository.findShoppingCartByUserId(anyLong())).thenReturn(shoppingCart);
         when(cartItemRepository.findByIdAndShoppingCartId(anyLong(),
                 anyLong())).thenReturn(Optional.of(cartItem));
         when(cartItemMapper.toDto(cartItemRepository.save(cartItem))).thenReturn(cartItemDto);
         CartItemDto actual = shoppingCartService
                 .updateQuantity(ID_ONE, quantityCartItemDto, ID_TWO);
         assertEquals(cartItemDto, actual);
-        verify(shoppingCartRepository, times(1)).findShoppingCartById(anyLong());
+        verify(shoppingCartRepository, times(1)).findShoppingCartByUserId(anyLong());
         verify(cartItemRepository, times(1)).findByIdAndShoppingCartId(anyLong(), anyLong());
         verify(cartItemMapper, times(1)).toDto(cartItemRepository.save(cartItem));
         verify(shoppingCartRepository, times(1)).save(any(ShoppingCart.class));
@@ -158,11 +170,11 @@ public class ShoppingCartServiceTest {
         Book book = new Book();
         book.setId(ID_ONE);
         book.setTitle(TITLE);
-        book.setAuthor("Author1");
-        book.setIsbn("Isbn1");
-        book.setPrice(BigDecimal.valueOf(20));
-        book.setDescription("Description1");
-        book.setCoverImage("Cover Image1");
+        book.setAuthor(AUTHOR);
+        book.setIsbn(ISBN);
+        book.setPrice(PRICE);
+        book.setDescription(DESCRIPTION);
+        book.setCoverImage(COVER_IMAGE);
         book.setCategories(getCategory());
         return book;
     }
@@ -171,8 +183,8 @@ public class ShoppingCartServiceTest {
         final Set<Category> categories = new HashSet<>();
         Category category = new Category();
         category.setId(ID_ONE);
-        category.setName("Fiction");
-        category.setDescription("Fiction books");
+        category.setName(FICTION);
+        category.setDescription(FICTION_BOOKS);
         categories.add(category);
         return categories;
     }
@@ -181,11 +193,11 @@ public class ShoppingCartServiceTest {
         User user = new User();
         user.setRoles(getRoleUser());
         user.setId(ID_TWO);
-        user.setEmail("Jon.doe@example.com");
-        user.setPassword("password1");
-        user.setFirstName("firstName1");
-        user.setLastName("lastName1");
-        user.setShippingAddress("shippingAddress1");
+        user.setEmail(USER_EMAIL);
+        user.setPassword(USER_PASSWORD);
+        user.setFirstName(FIRST_NAME);
+        user.setLastName(LAST_NAME);
+        user.setShippingAddress(SHIPPING_ADDRESS);
         return user;
     }
 
