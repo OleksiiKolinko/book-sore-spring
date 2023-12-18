@@ -4,6 +4,7 @@ This application make more easier  and more safety purchase the books. It will b
 ## The technologies and tools used
 * Java 17
 * Maven
+* Mockito
 * Mapstruct
 * MySql 8
 * Liquibase
